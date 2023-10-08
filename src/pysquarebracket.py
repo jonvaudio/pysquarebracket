@@ -37,31 +37,35 @@ _bg_colours = {f'bg_{k}': b'4'+v for k, v in _std_colours.items()}
 _bg_bright_colours = {f'bg_bright_{k}': b'10'+v for k, v in _std_colours.items()}
 _FORMATS.update({**_fg_colours, **_fg_bright_colours, **_bg_colours, **_bg_bright_colours})
 
-def _format(styles: StyleType) -> bytes:
+def format(styles: StyleType) -> bytes:
   if isinstance(styles, str):
     styles = [styles]
   return b'\x1b[' + b';'.join(map(lambda style: _FORMATS[style], styles)) + b'm'
 
-def write_now(msg: Union[str, bytes]) -> None:
+def write_bytes(msg: bytes) -> None:
   # print() doesn't send anything to stdout until there is a
   # newline, and so using print("msg", end='') actually re-orders the output
   # so that formatting resets to plain without printing anything
-  if isinstance(msg, str):
-    msg = msg.encode()
   sys.stdout.buffer.write(msg)
   sys.stdout.buffer.flush()
 
-def set_format(styles: StyleType) -> None:
-  write_now(_format(styles))
+def write_str(msg: str) -> None:
+  write_bytes(msg.encode())
 
-def write_format(msg: str, styles: StyleType) -> None:
+def set_format(styles: StyleType) -> None:
+  write_bytes(format(styles))
+
+def reset_format() -> None:
+  write_bytes(format('plain'))
+
+def write_formatted(msg: str = '', styles: StyleType = 'plain') -> None:
   set_format(styles)
-  write_now(msg)
+  write_bytes(msg.encode())
   set_format('plain')
 
-def print_format(msg: str, styles: StyleType) -> None:
-  write_format(msg, styles)
-  write_now('\n')
+def writeline_formatted(msg: str = '', styles: StyleType = 'plain') -> None:
+  write_formatted(msg, styles)
+  write_str('\n')
 
 def write_creturn() -> None:
-  write_now(b'\r')
+  write_str('\r')
