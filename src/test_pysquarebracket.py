@@ -43,15 +43,6 @@ def test_alternate() -> None:
     psb.AltMode.go(5, 10)
     psb.write_str('hello, alternate mode')
     time.sleep(1)
-    # while True:
-    #   c = sys.stdin.read(1)
-    #   psb.AltMode.clear()
-    #   psb.AltMode.go(5, 10)
-    #   psb.write_str(c)
-    #   psb.AltMode.go(6, 10)
-    #   psb.write_str('(Press q to quit)')
-    #   if c == 'q':
-    #     break
     while True:
       c = psb.AltMode.poll_ch()
       if c:
