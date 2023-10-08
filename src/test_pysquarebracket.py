@@ -40,21 +40,25 @@ def test_cr() -> None:
 
 def test_alternate() -> None:
   with psb.alternate_mode():
-    psb.AltMode.go(5, 10)
-    psb.write_str('hello, alternate mode')
-    time.sleep(1)
+    current_c = ''
     while True:
       c = psb.AltMode.poll_ch()
-      if c:
-        psb.AltMode.clear()
-        psb.AltMode.go(5, 10)
-        psb.write_str(c)
-        psb.AltMode.go(6, 10)
-        psb.write_str('(Press q to quit)')
-        if c == 'q':
-          break
-      else:
+      if c == 'q':
+        break
+      elif c:
+        current_c = c
+      rows, cols = psb.get_rows_cols()
+      psb.AltMode.clear()
+      psb.AltMode.go(1, 1)
+      psb.write_str(f'{rows} rows, {cols} cols')
+      psb.AltMode.go(2, 1)
+      psb.write_str(current_c)
+      psb.AltMode.go(3, 1)
+      psb.write_str('(Press q to quit)')
+      if not c:
+        # Save CPU. Sleep at end of loop otherwise first draw delayed
         time.sleep(0.01)
+      
 
 def test_get_size() -> None:
   rows, cols = psb.get_rows_cols()
