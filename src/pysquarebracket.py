@@ -37,10 +37,28 @@ _bg_colours = {f'bg_{k}': b'4'+v for k, v in _std_colours.items()}
 _bg_bright_colours = {f'bg_bright_{k}': b'10'+v for k, v in _std_colours.items()}
 _FORMATS.update({**_fg_colours, **_fg_bright_colours, **_bg_colours, **_bg_bright_colours})
 
+_cursors = {
+  'block_blink': b'0',
+  'block_steady': b'2',
+  'underline_blink': b'3',
+  'underline_steady': b'4',
+  'beam_blink': b'5',
+  'beam_steady': b'6'
+}
+
 def format(styles: StyleType) -> bytes:
   if isinstance(styles, str):
     styles = [styles]
   return b'\x1b[' + b';'.join(map(lambda style: _FORMATS[style], styles)) + b'm'
+
+def cursor_style(style: str) -> bytes:
+  return b'\x1b[' + _cursors[style] + b' q'
+
+def cursor_enabled(enabled: bool) -> bytes:
+  if enabled:
+    return b'\x1b[?25h'
+  else:
+    return b'\x1b[?25l'
 
 def write_bytes(msg: bytes) -> None:
   # print() doesn't send anything to stdout until there is a
@@ -66,6 +84,18 @@ def write_formatted(msg: str = '', styles: StyleType = 'plain') -> None:
 def writeline_formatted(msg: str = '', styles: StyleType = 'plain') -> None:
   write_formatted(msg, styles)
   write_str('\n')
+
+def set_cursor_style(style: str) -> None:
+  write_bytes(cursor_style(style))
+
+def set_cursor_enabled(enabled: bool) -> None:
+  write_bytes(cursor_enabled(enabled))
+
+def clear() -> bytes:
+  return b'\x1b[2J'
+
+def clear_screen() -> None:
+  write_bytes(clear())
 
 def write_creturn() -> None:
   write_str('\r')

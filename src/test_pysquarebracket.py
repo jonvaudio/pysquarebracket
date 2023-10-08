@@ -25,8 +25,9 @@ def test_cr() -> None:
     num_non_empty_blocks = num_full_blocks + (1 if size % 8 else 0)
     num_empty_blocks = (max_size // 8) - num_non_empty_blocks
     psb.write_str((full_block * num_full_blocks) + blocks[size % 8] + (' ' * num_empty_blocks))
-  sleep = 0.01
+  sleep = 0.001
   max_size = 60*8
+  psb.set_cursor_enabled(False)
   for i in range(0, max_size):
     draw(i, max_size)
     time.sleep(sleep)
@@ -34,8 +35,14 @@ def test_cr() -> None:
     draw(i, max_size)
     time.sleep(sleep)
   psb.writeline_formatted()
+  psb.set_cursor_enabled(True)
+
+def test_clear() -> None:
+  psb.clear_screen()
 
 if __name__ == '__main__':
+  test_clear()
   test_combos()
   test_colours()
   test_cr()
+  #test_clear()
