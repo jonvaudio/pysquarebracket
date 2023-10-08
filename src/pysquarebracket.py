@@ -1,6 +1,10 @@
 import sys
+import termios
+import tty
+import struct
+import fcntl
 
-from typing import Union, List
+from typing import Union, List, Any
 
 StyleType = Union[str, List[str]]
 
@@ -54,12 +58,6 @@ def format(styles: StyleType) -> bytes:
 def cursor_style(style: str) -> bytes:
   return b'\x1b[' + _cursors[style] + b' q'
 
-def cursor_enabled(enabled: bool) -> bytes:
-  if enabled:
-    return b'\x1b[?25h'
-  else:
-    return b'\x1b[?25l'
-
 def write_bytes(msg: bytes) -> None:
   # print() doesn't send anything to stdout until there is a
   # newline, and so using print("msg", end='') actually re-orders the output
@@ -89,19 +87,37 @@ def set_cursor_style(style: str) -> None:
   write_bytes(cursor_style(style))
 
 def set_cursor_enabled(enabled: bool) -> None:
-  write_bytes(cursor_enabled(enabled))
+  if enabled:
+    write_bytes(b'\x1b[?25h')
+  else:
+    write_bytes(b'\x1b[?25l')
+
+def get_rows_cols() -> (int, int):
+    packed = fcntl.ioctl(1, termios.TIOCGWINSZ, struct.pack('HHHH', 0, 0, 0, 0))
+    rows, cols, _, _ = struct.unpack('HHHH', packed)
+    return rows, cols
 
 class AlternateMode:
   def clear() -> None:
     write_bytes(b'\x1b[2J')
 
-  def enter() -> None:
+  def enter() -> List[Any]:
     write_bytes(b'\x1b[?1049h')
+    set_cursor_enabled(False)
     AlternateMode.clear()
+    AlternateMode.go(1, 1)
+    original_attr = termios.tcgetattr(1)
+    tty.setraw(1, termios.TCSANOW)
+    return original_attr
   
-  def exit() -> None:
+  def exit(original_attr: List[Any]) -> None:
     AlternateMode.clear()
+    set_cursor_enabled(True)
     write_bytes(b'\x1b[?1049l')
+    termios.tcsetattr(1, termios.TCSANOW, original_attr)
+  
+  def go(row: int, col: int) -> None:
+    write_bytes(b'\x1b[' + str(row).encode() + b';' + str(col).encode() + b'H')
 
 def write_creturn() -> None:
   write_str('\r')

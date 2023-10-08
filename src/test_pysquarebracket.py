@@ -38,12 +38,19 @@ def test_cr() -> None:
   psb.set_cursor_enabled(True)
 
 def test_alternate() -> None:
-  psb.AlternateMode.enter()
-  time.sleep(1)
-  psb.AlternateMode.exit()
+  attr = psb.AlternateMode.enter()
+  psb.AlternateMode.go(5, 10)
+  psb.write_str('hello, alternate mode')
+  time.sleep(2)
+  psb.AlternateMode.exit(attr)
+
+def test_get_size() -> None:
+  rows, cols = psb.get_rows_cols()
+  print(f'{rows} rows, {cols} cols')
 
 if __name__ == '__main__':
   test_combos()
   test_colours()
   test_cr()
+  test_get_size()
   test_alternate()
