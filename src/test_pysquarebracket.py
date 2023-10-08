@@ -37,12 +37,13 @@ def test_cr() -> None:
   psb.writeline_formatted()
   psb.set_cursor_enabled(True)
 
-def test_clear() -> None:
-  psb.clear_screen()
+def test_alternate() -> None:
+  psb.AlternateMode.enter()
+  time.sleep(1)
+  psb.AlternateMode.exit()
 
 if __name__ == '__main__':
-  test_clear()
   test_combos()
   test_colours()
   test_cr()
-  #test_clear()
+  test_alternate()

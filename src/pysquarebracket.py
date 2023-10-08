@@ -91,11 +91,17 @@ def set_cursor_style(style: str) -> None:
 def set_cursor_enabled(enabled: bool) -> None:
   write_bytes(cursor_enabled(enabled))
 
-def clear() -> bytes:
-  return b'\x1b[2J'
+class AlternateMode:
+  def clear() -> None:
+    write_bytes(b'\x1b[2J')
 
-def clear_screen() -> None:
-  write_bytes(clear())
+  def enter() -> None:
+    write_bytes(b'\x1b[?1049h')
+    AlternateMode.clear()
+  
+  def exit() -> None:
+    AlternateMode.clear()
+    write_bytes(b'\x1b[?1049l')
 
 def write_creturn() -> None:
   write_str('\r')
