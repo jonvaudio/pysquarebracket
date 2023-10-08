@@ -3,6 +3,8 @@ import termios
 import tty
 import struct
 import fcntl
+import contextlib
+import select
 
 from typing import Union, List, Any
 
@@ -97,27 +99,48 @@ def get_rows_cols() -> (int, int):
     rows, cols, _, _ = struct.unpack('HHHH', packed)
     return rows, cols
 
-class AlternateMode:
+class AltMode:
+  @staticmethod
   def clear() -> None:
     write_bytes(b'\x1b[2J')
 
+  @staticmethod
   def enter() -> List[Any]:
     write_bytes(b'\x1b[?1049h')
     set_cursor_enabled(False)
-    AlternateMode.clear()
-    AlternateMode.go(1, 1)
+    AltMode.clear()
+    AltMode.go(1, 1)
     original_attr = termios.tcgetattr(1)
     tty.setraw(1, termios.TCSANOW)
     return original_attr
   
+  @staticmethod
   def exit(original_attr: List[Any]) -> None:
-    AlternateMode.clear()
+    AltMode.clear()
     set_cursor_enabled(True)
     write_bytes(b'\x1b[?1049l')
     termios.tcsetattr(1, termios.TCSANOW, original_attr)
   
+  @staticmethod
   def go(row: int, col: int) -> None:
     write_bytes(b'\x1b[' + str(row).encode() + b';' + str(col).encode() + b'H')
+  
+  @staticmethod
+  def poll_ch() -> str:
+    ready, _, _ = select.select([sys.stdin], [], [], 0.0)
+    if ready:
+      return sys.stdin.read(1)
+    else:
+      return ''
+
+@contextlib.contextmanager
+def alternate_mode() -> None:
+  try:
+    original_attr = AltMode.enter()
+    yield
+  finally:
+    if 'original_attr' in locals():
+      AltMode.exit(original_attr)
 
 def write_creturn() -> None:
   write_str('\r')

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import time
+import sys
 
 import pysquarebracket as psb
 
@@ -38,11 +39,31 @@ def test_cr() -> None:
   psb.set_cursor_enabled(True)
 
 def test_alternate() -> None:
-  attr = psb.AlternateMode.enter()
-  psb.AlternateMode.go(5, 10)
-  psb.write_str('hello, alternate mode')
-  time.sleep(2)
-  psb.AlternateMode.exit(attr)
+  with psb.alternate_mode():
+    psb.AltMode.go(5, 10)
+    psb.write_str('hello, alternate mode')
+    time.sleep(1)
+    # while True:
+    #   c = sys.stdin.read(1)
+    #   psb.AltMode.clear()
+    #   psb.AltMode.go(5, 10)
+    #   psb.write_str(c)
+    #   psb.AltMode.go(6, 10)
+    #   psb.write_str('(Press q to quit)')
+    #   if c == 'q':
+    #     break
+    while True:
+      c = psb.AltMode.poll_ch()
+      if c:
+        psb.AltMode.clear()
+        psb.AltMode.go(5, 10)
+        psb.write_str(c)
+        psb.AltMode.go(6, 10)
+        psb.write_str('(Press q to quit)')
+        if c == 'q':
+          break
+      else:
+        time.sleep(0.01)
 
 def test_get_size() -> None:
   rows, cols = psb.get_rows_cols()
