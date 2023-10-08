@@ -58,7 +58,6 @@ def test_alternate() -> None:
       if not c:
         # Save CPU. Sleep at end of loop otherwise first draw delayed
         time.sleep(0.01)
-      
 
 def test_get_size() -> None:
   rows, cols = psb.get_rows_cols()

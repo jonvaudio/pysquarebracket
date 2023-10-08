@@ -132,6 +132,9 @@ class AltMode:
       return sys.stdin.read(1)
     else:
       return ''
+  
+  def wait_ch() -> str:
+    return sys.stdin.read(1)
 
 @contextlib.contextmanager
 def alternate_mode() -> None:
