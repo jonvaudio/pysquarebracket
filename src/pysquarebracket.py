@@ -6,7 +6,7 @@ import fcntl
 import contextlib
 import select
 
-from typing import Union, List, Any
+from typing import Union, List, Any, Tuple
 
 StyleType = Union[str, List[str]]
 
@@ -94,7 +94,7 @@ def set_cursor_enabled(enabled: bool) -> None:
   else:
     write_bytes(b'\x1b[?25l')
 
-def get_rows_cols() -> (int, int):
+def get_rows_cols() -> Tuple[int, int]:
     packed = fcntl.ioctl(1, termios.TIOCGWINSZ, struct.pack('HHHH', 0, 0, 0, 0))
     rows, cols, _, _ = struct.unpack('HHHH', packed)
     return rows, cols
